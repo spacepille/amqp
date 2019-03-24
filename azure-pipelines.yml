@@ -1,26 +1,56 @@
-# https://docs.microsoft.com/azure/devops/pipelines/languages/go
+strategy:
+  matrix:
+    # Versions from https://godoc.org/golang.org/dl
+    linux-gotip:
+      imageName: 'ubuntu-16.04'
+      goVersion: gotip
+    # linux-go1.12.1:
+    #   goVersion: go1.12.1
+    # linux-go1.11.5:
+    #   goVersion: go1.11.5
+    # mac:
+    #   imageName: 'macos-10.13'
+    # windows:
+    #   imageName: 'vs2017-win2016'
+
 pool:
   vmImage: 'ubuntu-16.04' # Other options: 'macOS-10.13', 'vs2017-win2016'
 
 variables:
+  GOROOT: '' # Image seems to have GOROOT set by default :(
   GOPATH: '$(system.defaultWorkingDirectory)/go'
+  GO111MODULE: 'off' # TODO: create go.mod
+  binPath: '$(system.defaultWorkingDirectory)/bin'
   modulePath: '$(GOPATH)/src/pack.ag/amqp' # Path to the module's code
+
 
 steps:
 - script: |
     mkdir -p '$(modulePath)'
     shopt -s extglob
-    mv !(go) '$(modulePath)'
+    mv !(go|bin) '$(modulePath)'
     echo "##vso[task.prependpath]$(go env GOPATH)/bin"
-    echo "##vso[task.prependpath]$(go env GOROOT)/bin"
   displayName: 'Set up the Go workspace'
 
 - script: |
+    go get -u -v golang.org/dl/$(goVersion)
+    $(goVersion) download
+    mkdir -p "$(binPath)"
+    ln -s "$(go env GOPATH)/bin/$(goVersion)" "$(binPath)/go"
+    echo "##vso[task.prependpath]$(binPath)"
+    go version
+  displayName: "Install $(goVersion)"
+
+- script: |
+    which go
+    go version
+    go env
     go get -v github.com/mattn/goveralls
     go get -v golang.org/x/tools/cmd/cover
   displayName: 'Download coverage tools'
 
 - script: |
+    pwd
     go get -t -v -d -tags "integration gofuzz" .
   workingDirectory: '$(modulePath)'
   displayName: 'Download test dependencies'

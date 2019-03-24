@@ -28,4 +28,5 @@ test386:
 ci: test386 coverage
 
 coverage:
+	go version
 	TEST_CORPUS=1 go test -tags "integration gofuzz" -cover -coverprofile=cover.out -v
