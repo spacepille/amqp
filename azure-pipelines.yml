@@ -1,0 +1,50 @@
+# https://docs.microsoft.com/azure/devops/pipelines/languages/go
+pool:
+  vmImage: 'ubuntu-16.04' # Other options: 'macOS-10.13', 'vs2017-win2016'
+
+variables:
+  GOPATH: '$(system.defaultWorkingDirectory)/go'
+  modulePath: '$(GOPATH)/src/pack.ag/amqp' # Path to the module's code
+
+steps:
+- script: |
+    mkdir -p '$(modulePath)'
+    shopt -s extglob
+    mv !(go) '$(modulePath)'
+    echo "##vso[task.prependpath]$(go env GOPATH)/bin"
+    echo "##vso[task.prependpath]$(go env GOROOT)/bin"
+  displayName: 'Set up the Go workspace'
+
+- script: |
+    go get -v github.com/mattn/goveralls
+    go get -v golang.org/x/tools/cmd/cover
+  displayName: 'Download coverage tools'
+
+- script: |
+    go get -t -v -d -tags "integration gofuzz" .
+  workingDirectory: '$(modulePath)'
+  displayName: 'Download test dependencies'
+
+- script: |
+    make ci
+  workingDirectory: '$(modulePath)'
+  env:
+    AZURE_SUBSCRIPTION_ID: $(azureSubscriptionID)
+    AZURE_RESOURCE_GROUP: $(azureResourceGroup)
+    AZURE_TENANT_ID: $(azureTenantID)
+    AZURE_CLIENT_ID: $(azureClientID)
+    AZURE_CLIENT_SECRET: $(azureClientSecret)
+    SERVICEBUS_NAMESPACE: $(servicebusNamespace)
+    SERVICEBUS_ACCESS_KEY_NAME: $(servicebusAccessKeyName)
+    SERVICEBUS_ACCESS_KEY: $(servicebusAccessKey)
+    EVENTHUB_NAMESPACE: $(eventhubNamespace)
+    EVENTHUB_ACCESS_KEY_NAME: $(eventhubAccessKeyName)
+    EVENTHUB_ACCESS_KEY: $(eventhubAccessKey)
+  displayName: 'Run tests'
+
+- script: |
+    goveralls -coverprofile=cover.out -service=travis-ci
+  workingDirectory: '$(modulePath)'
+  env:
+    COVERALLS_TOKEN: $(coverallsToken)
+  displayName: 'Upload coverage profile to Coveralls'
