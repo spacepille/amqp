@@ -1,13 +1,15 @@
 strategy:
   matrix:
     # Versions from https://godoc.org/golang.org/dl
+    linux-go1.11.5:
+      imageName: 'ubuntu-16.04'
+      goVersion: go1.11.5
+    linux-go1.12.1:
+      imageName: 'ubuntu-16.04'
+      goVersion: go1.12.1
     linux-gotip:
       imageName: 'ubuntu-16.04'
       goVersion: gotip
-    # linux-go1.12.1:
-    #   goVersion: go1.12.1
-    # linux-go1.11.5:
-    #   goVersion: go1.11.5
     # mac:
     #   imageName: 'macos-10.13'
     # windows:
