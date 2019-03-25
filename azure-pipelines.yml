@@ -1,18 +1,18 @@
 strategy:
   matrix:
     # Versions from https://godoc.org/golang.org/dl
-    # linux-go1.11.5:
-    #   imageName: 'ubuntu-16.04'
-    #   goVersion: go1.11.5
-    # linux-go1.12.1:
-    #   imageName: 'ubuntu-16.04'
-    #   goVersion: go1.12.1
-    # linux-gotip:
-    #   imageName: 'ubuntu-16.04'
-    #   goVersion: gotip
-    # mac:
-    #   imageName: 'macos-10.13'
-    #   goVersion: go1.12.1
+    linux-go1.11.5:
+      imageName: 'ubuntu-16.04'
+      goVersion: go1.11.5
+    linux-go1.12.1:
+      imageName: 'ubuntu-16.04'
+      goVersion: go1.12.1
+    linux-gotip:
+      imageName: 'ubuntu-16.04'
+      goVersion: gotip
+    mac:
+      imageName: 'macos-10.13'
+      goVersion: go1.12.1
     windows:
       imageName: 'vs2017-win2016'
       goVersion: go1.12.1
@@ -45,20 +45,18 @@ steps:
   displayName: "Install $(goVersion)"
 
 - bash: |
-    which go
-    go version
-    go env
     go get -v github.com/mattn/goveralls
     go get -v golang.org/x/tools/cmd/cover
   displayName: 'Download coverage tools'
 
 - script: |
-    pwd
     go get -t -v -d -tags "integration gofuzz" .
   workingDirectory: '$(modulePath)'
   displayName: 'Download test dependencies'
 
 - script: |
+    go version
+    go env
     make ci
   workingDirectory: '$(modulePath)'
   env:
