@@ -10,8 +10,9 @@ strategy:
     linux-gotip:
       imageName: 'ubuntu-16.04'
       goVersion: gotip
-    # mac:
-    #   imageName: 'macos-10.13'
+    mac:
+      imageName: 'macos-10.13'
+      goVersion: go1.12.1
     # windows:
     #   imageName: 'vs2017-win2016'
 
