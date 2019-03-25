@@ -1,23 +1,24 @@
 strategy:
   matrix:
     # Versions from https://godoc.org/golang.org/dl
-    linux-go1.11.5:
-      imageName: 'ubuntu-16.04'
-      goVersion: go1.11.5
-    linux-go1.12.1:
-      imageName: 'ubuntu-16.04'
+    # linux-go1.11.5:
+    #   imageName: 'ubuntu-16.04'
+    #   goVersion: go1.11.5
+    # linux-go1.12.1:
+    #   imageName: 'ubuntu-16.04'
+    #   goVersion: go1.12.1
+    # linux-gotip:
+    #   imageName: 'ubuntu-16.04'
+    #   goVersion: gotip
+    # mac:
+    #   imageName: 'macos-10.13'
+    #   goVersion: go1.12.1
+    windows:
+      imageName: 'vs2017-win2016'
       goVersion: go1.12.1
-    linux-gotip:
-      imageName: 'ubuntu-16.04'
-      goVersion: gotip
-    mac:
-      imageName: 'macos-10.13'
-      goVersion: go1.12.1
-    # windows:
-    #   imageName: 'vs2017-win2016'
 
 pool:
-  vmImage: 'ubuntu-16.04' # Other options: 'macOS-10.13', 'vs2017-win2016'
+  vmImage: '$(imageName)'
 
 variables:
   GOROOT: '' # Image seems to have GOROOT set by default :(
@@ -26,16 +27,15 @@ variables:
   binPath: '$(system.defaultWorkingDirectory)/bin'
   modulePath: '$(GOPATH)/src/pack.ag/amqp' # Path to the module's code
 
-
 steps:
-- script: |
+- bash: |
     mkdir -p '$(modulePath)'
     shopt -s extglob
     mv !(go|bin) '$(modulePath)'
     echo "##vso[task.prependpath]$(go env GOPATH)/bin"
   displayName: 'Set up the Go workspace'
 
-- script: |
+- bash: |
     go get -u -v golang.org/dl/$(goVersion)
     $(goVersion) download
     mkdir -p "$(binPath)"
@@ -44,7 +44,7 @@ steps:
     go version
   displayName: "Install $(goVersion)"
 
-- script: |
+- bash: |
     which go
     go version
     go env
